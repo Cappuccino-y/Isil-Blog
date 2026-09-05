@@ -1,32 +1,65 @@
 import React, {useEffect, useState, useRef} from 'react';
-import {IconButton, Paper, TextField, Button, Divider, Typography} from '@mui/material';
-import ChatIcon from '@mui/icons-material/Chat';
+import {IconButton, Paper, TextField, Button, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import gptService from '../api/gpt'
 import MDEditor from "@uiw/react-md-editor";
 import Code from './Code'
 
-function capitalizeFirstLetter(string) {
-    return string.charAt(0).toUpperCase() + string.slice(1);
-}
+const MOON_THEME = {
+    primary: '#4C5871',      // 黛青
+    ink: '#1C2333',          // 墨黛
+    secondary: '#6E7B91',    // 银灰
+    gold: '#B08D57',         // 香槟金
+    divider: '#D7DDE7',
+    userBubble: '#FFF6E8',   // 暖金雾
+    aiBubble: '#EAF0F6',     // 雾白
+    glass: 'rgba(255,255,255,.92)'
+};
+
+const WELCOME = 'Tilion 已就绪——可以问我任何事，或让我为你找一篇博客。';
+
+const MoonCrescent = ({id, size = 20, color = MOON_THEME.gold}) => (
+    <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true">
+        <mask id={id}>
+            <rect width="24" height="24" fill="white"/>
+            <circle cx="17" cy="7" r="7.5" fill="black"/>
+        </mask>
+        <circle cx="11" cy="13" r="9" fill={color} mask={`url(#${id})`}/>
+    </svg>
+);
+
+const roleLabel = role => (role === 'assistant' ? 'Tilion' : 'User');
+
+const bubbleStyle = backgroundColor => ({
+    border: `1px solid ${MOON_THEME.divider}`,
+    borderRadius: '10px',
+    padding: '8px',
+    backgroundColor
+});
+
+const Markdown = ({source}) => (
+    <MDEditor.Markdown
+        className="markdown"
+        source={source}
+        components={{code: Code}}
+        style={{whiteSpace: 'pre-wrap', backgroundColor: 'transparent'}}
+    />
+);
 
 const CustomerServiceChat = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [message, setMessage] = useState('');
-    const [chatLog, setChatLog] = useState([
-        {
-            "role": "system", "content": `
-            在接下来的你的回答中如果是行间公式请使用下列的形式进行回答:
-            \`\`\` Katex
-            公式内容
-            \`\`\`
-            如果需要是行内公式请使用下列的形式进行回答:
-            \` \$\$  公式内容 \$\$\`
-        `
-        }
-
-    ]);
+    const [chatLog, setChatLog] = useState([]);
+    const [waiting, setWaiting] = useState(false);
     const messagesEndRef = useRef(null);
+
+    useEffect(() => {
+        const loggedUserJSON = window.localStorage.getItem('loggedBlogappUser');
+        if (loggedUserJSON) {
+            const user = JSON.parse(loggedUserJSON);
+            gptService.setToken(user.token);
+        }
+    }, []);
 
     const scrollToBottom = () => {
         if (messagesEndRef.current) {
@@ -34,103 +67,103 @@ const CustomerServiceChat = () => {
         }
     };
 
-    const data = {
-        "model": "gpt-3.5-turbo",
-        "messages": chatLog
-    }
-
     const toggleChatBox = () => {
         setIsOpen(!isOpen);
     };
-    const [waitng, setWaiting] = useState(false)
 
-    const handleSendMessage = async () => {
+    const handleSendMessage = () => {
         setChatLog(prevChatLog => [...prevChatLog, {role: 'user', content: message}]);
         setMessage('');
-        setWaiting(true)
+        setWaiting(true);
     };
 
     useEffect(() => {
-        const gptAnswer = async () => {
-            const reply = await gptService.getReply(data)
-            setChatLog([...chatLog, {role: 'assistant', content: reply}]);
-            setWaiting(false)
-
-        }
-        if (chatLog[chatLog.length - 1].role === 'user') {
-            gptAnswer()
+        const getAnswer = async () => {
+            try {
+                const reply = await gptService.getReply(chatLog);
+                setChatLog(prevChatLog => [...prevChatLog, {role: 'assistant', content: reply}]);
+            } catch (exception) {
+                setChatLog(prevChatLog => [...prevChatLog, {
+                    role: 'assistant',
+                    content: 'Tilion 暂时无法回应，请稍后再试。'
+                }]);
+            } finally {
+                setWaiting(false);
+            }
+        };
+        if (chatLog.length > 0 && chatLog[chatLog.length - 1].role === 'user') {
+            getAnswer();
         }
         scrollToBottom();
-    }, [chatLog])
+    }, [chatLog]);
 
     return (
-        <div style={{position: 'fixed', right: '30px', bottom: '108px'}}>
+            <div className="tilion-anchor">
             {isOpen && (
-                <Paper elevation={4} style={{
-                    width: '300px',
-                    height: '500px',
+                <Paper elevation={8} style={{
+                    width: '320px',
+                    height: '520px',
                     display: 'flex',
-                    flexDirection: 'column'
+                    flexDirection: 'column',
+                    backgroundColor: MOON_THEME.glass,
+                    backdropFilter: 'blur(12px)',
+                    WebkitBackdropFilter: 'blur(12px)',
+                    borderRadius: '12px',
+                    borderTop: `1px solid ${MOON_THEME.gold}`,
+                    overflow: 'hidden'
                 }}>
                     <div style={{
                         display: 'flex',
-                        justifyContent: 'flex-end',
-                        padding: '8px',
-                        height: '5px'
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 12px 10px 16px',
+                        borderBottom: `1px solid ${MOON_THEME.divider}`
                     }}>
+                        <div style={{display: 'flex', alignItems: 'center'}}>
+                            <MoonCrescent id="tilion-title-moon" size={18}/>
+                            <Typography style={{
+                                marginLeft: '8px',
+                                fontWeight: 'bold',
+                                color: MOON_THEME.ink,
+                                fontFamily: "'Cinzel','Noto Serif SC','Source Han Serif SC','STZhongsong','SimSun',serif"
+                            }}>
+                                Tilion · 驾月者
+                            </Typography>
+                        </div>
                         <IconButton onClick={toggleChatBox} size="small">
                             <CloseIcon/>
                         </IconButton>
                     </div>
                     <div style={{
-                        overflowY: 'auto', flexGrow: 1, padding: '0px 16px ',
+                        overflowY: 'auto', flexGrow: 1, padding: '16px 16px 0px 16px',
                     }}>
+                        <div style={{marginBottom: '16px'}}>
+                            <Typography variant="subtitle1" style={{
+                                fontWeight: 'bold',
+                                color: MOON_THEME.secondary
+                            }}>Tilion</Typography>
+                            <div style={bubbleStyle(MOON_THEME.aiBubble)}>
+                                <Markdown source={WELCOME}/>
+                            </div>
+                        </div>
                         {chatLog.map((entry, index) => (
                             <div key={index} style={{marginBottom: '16px'}}>
                                 <Typography variant="subtitle1" style={{
                                     fontWeight: 'bold',
-                                    color: '#333333'
-                                }}>{capitalizeFirstLetter(entry.role)} </Typography>
-                                <div style={{
-                                    border: '1px solid #e0e0e0',
-                                    borderRadius: '8px',
-                                    padding: '8px',
-                                    backgroundColor: entry.role === 'user' ? '#fff2e6' : '#e6f7ff'
-                                }}>
-                                    {entry.role === 'system' ?
-                                        <MDEditor.Markdown className="markdown"
-                                                           source={'这是基于GFT-4的对话窗口,可以问他任何事情！'}
-                                                           components={{
-                                                               code: Code
-                                                           }}
-                                                           style={{
-                                                               whiteSpace: 'pre-wrap',
-                                                               backgroundColor: 'transparent'
-                                                           }}/> :
-                                        <MDEditor.Markdown className="markdown" source={entry.content}
-                                                           components={{
-                                                               code: Code
-                                                           }}
-                                                           style={{
-                                                               whiteSpace: 'pre-wrap',
-                                                               backgroundColor: 'transparent'
-                                                           }}/>
-                                    }
+                                    color: MOON_THEME.secondary
+                                }}>{roleLabel(entry.role)}</Typography>
+                                <div style={bubbleStyle(entry.role === 'user' ? MOON_THEME.userBubble : MOON_THEME.aiBubble)}>
+                                    <Markdown source={entry.content}/>
                                 </div>
                             </div>
                         ))}
-                        {waitng && (
+                        {waiting && (
                             <div style={{marginBottom: '16px'}}>
                                 <Typography variant="subtitle1" style={{
                                     fontWeight: 'bold',
-                                    color: '#333333'
-                                }}>Assistant</Typography>
-                                <div style={{
-                                    border: '1px solid #e0e0e0',
-                                    borderRadius: '8px',
-                                    padding: '8px',
-                                    backgroundColor: '#e6f7ff'
-                                }}>
+                                    color: MOON_THEME.secondary
+                                }}>Tilion</Typography>
+                                <div style={bubbleStyle(MOON_THEME.aiBubble)}>
                                     <div>
                                         <div className="dot"></div>
                                         <div className="dot"></div>
@@ -151,7 +184,7 @@ const CustomerServiceChat = () => {
                             }}
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Type your message..."
+                            placeholder="问 Tilion 吧…"
                             onKeyDown={(e) => {
                                 if (e.key === 'Enter' && !e.shiftKey) {
                                     e.preventDefault();
@@ -162,9 +195,11 @@ const CustomerServiceChat = () => {
                         <Button
                             fullWidth
                             variant="contained"
-                            color="primary"
                             onClick={handleSendMessage}
-                            style={{marginTop: '8px'}}>
+                            style={{
+                                marginTop: '8px',
+                                backgroundColor: MOON_THEME.primary
+                            }}>
                             Send
                         </Button>
                     </div>
@@ -174,21 +209,21 @@ const CustomerServiceChat = () => {
                 <IconButton
                     onClick={toggleChatBox}
                     style={{
-                        background: '#007BFF',   // 蓝色背景
-                        borderRadius: '20px',    // 圆角
-                        padding: '10px 20px',    // 垂直和水平间距
+                        background: MOON_THEME.primary,
+                        borderRadius: '20px',
+                        padding: '10px 20px',
+                        boxShadow: '0 8px 30px rgba(28,35,51,.08)'
                     }}
                 >
-                    <ChatIcon fontSize="large" style={{color: 'white'}}/>
+                    <MoonCrescent id="tilion-fab-moon" size={20}/>
                     <Typography
                         variant="h6"
                         style={{
                             marginLeft: '8px',
-                            color: 'white',     // 白色文本
-                            fontFamily: '"Your Font Name", sans-serif'  // 你可以选择自己喜欢的字体
+                            color: 'white'
                         }}
                     >
-                        Chat
+                        Tilion
                     </Typography>
                 </IconButton>
             )}

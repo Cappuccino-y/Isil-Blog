@@ -4,34 +4,40 @@ import blogService from './api/blogs'
 import loginService from './api/login'
 import userService from './api/users'
 import FooterLink from "./components/FootLink";
-import {Container, useMediaQuery, useTheme} from '@mui/material'
-import {createTheme} from '@mui/material/styles';
+import {useMediaQuery, useTheme} from '@mui/material'
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 import {ThemeProvider} from "@mui/material";
 import {
     BrowserRouter as Router,
-    Routes, Route, Link, Navigate, useNavigate
+    Routes, Route, Navigate, useLocation
 } from "react-router-dom"
 import ExampleContext, {ExampleProvider} from "./components/ExampleContext";
 import SnackBlogbar from "./components/SnackBlogbar";
 import CustomerServiceChat from "./components/CustomerServiceChat";
+import MoonNav from "./components/MoonNav";
 
 const HomePage = lazy(() => import('./pages/HomePage'))
 const LoginPage = lazy(() => import('./pages/LoginPage'))
 const BlogPage = lazy(() => import('./pages/BlogPage'))
 
+/* Router 内感知当前路径的导航 */
+const Nav = ({user, setUser}) => {
+    const {pathname} = useLocation();
+    return <MoonNav user={user} setUser={setUser} path={pathname}/>;
+};
 
-const HomePageBg = () => {
+
+const HomePageBg = ({user}) => {
     useEffect(() => {
-        document.body.style = `background: url(bg1.jpg) no-repeat center center fixed; -webkit-background-size: cover; -moz-background-size: cover; -o-background-size: cover; background-size: cover;`;
+        document.body.style = `background: #F4F6FA;`;
         return () => {
             document.body.style = '';
         };
     }, []);
 
     return (
-        <HomePage/>
+        <HomePage user={user}/>
     );
 }
 
@@ -97,11 +103,11 @@ const App = () => {
             const user = await userService.create({
                 username: userInfo.username, password: userInfo.password, name: userInfo.name
             })
-            setMessage('Create success, please log in')
+            setMessage('注册成功，请登录')
             setSnackbarOpen(true)
             return
         } catch (error) {
-            setMessage('Username or name registered and at least 3 words for password')
+            setMessage('用户名或昵称已被注册，密码至少 3 位')
             setSnackbarOpen(true)
             return
         }
@@ -113,17 +119,17 @@ const App = () => {
                 username: userInfo.username, password: userInfo.oldPassword
             })
         } catch (error) {
-            setMessage('Wrong username or password')
+            setMessage('用户名或密码错误')
             setSnackbarOpen(true)
             return
         }
         try {
             window.localStorage.removeItem('loggedBlogappUser')
             await userService.update(userInfo.username, userInfo.newPassword)
-            setMessage('Change successful')
+            setMessage('修改成功')
             setSnackbarOpen(true)
         } catch (exception) {
-            setMessage('Change failed')
+            setMessage('修改失败')
             setSnackbarOpen(true)
         }
     }
@@ -134,7 +140,7 @@ const App = () => {
                 username, password,
             })
             setSnackOpen(true)
-            setSnackMessage('Login successful')
+            setSnackMessage('登录成功 · 明月迎你归')
             window.localStorage.setItem(
                 'loggedBlogappUser', JSON.stringify(user)
             )
@@ -144,15 +150,23 @@ const App = () => {
                 navigate('/blogs')
             }, 1000)
         } catch (exception) {
-            notice('Wrong username or password', 'error')
+            notice('用户名或密码错误', 'error')
         }
     }
 
     return (
-        <div>
-            <Container>
+        <Box sx={{display: 'flex', flexDirection: 'column', minHeight: '100vh'}}>
+            <Box component="main" sx={{
+                display: 'flex',
+                flexDirection: 'column',
+                flex: 1,
+                minHeight: 0,
+                width: '100%',
+                pt: '64px',
+            }}>
                 <ExampleProvider val={{handleReset, handleSignUp, isMobile}}>
                     <Router>
+                        <Nav user={user} setUser={setUser}/>
                         <Suspense fallback={
                             <Box sx={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '90vh'}}>
                                 <CircularProgress color='inherit' size={70}/>
@@ -160,7 +174,7 @@ const App = () => {
                         }>
                             <Routes>
                                 <Route path="" element={<Navigate to={'/home'}/>}/>
-                                <Route path="/home" element={<HomePageBg/>}/>
+                                <Route path="/home" element={<HomePageBg user={user}/>}/>
                                 <Route path="/login" element={<LoginPageBg handleLogin={handleLogin} message={message}
                                                                            setMessage={setMessage}/>}/>
                                 <Route path="/blogs"
@@ -170,12 +184,12 @@ const App = () => {
                             </Routes>
                         </Suspense>
                     </Router>
-                    <FooterLink/>
-                    <SnackBlogbar open={snackOpen} setOpen={setSnackOpen} message={snackMessage}/>
                 </ExampleProvider>
-            </Container>
+            </Box>
+            <FooterLink/>
+            <SnackBlogbar open={snackOpen} setOpen={setSnackOpen} message={snackMessage}/>
             {user && <CustomerServiceChat/>}
-        </div>
+        </Box>
     )
 }
 

@@ -40,7 +40,7 @@ function DialogReset() {
     return (
         <div>
             <Button variant="contained" color="primary" onClick={handleClickOpen}
-                    sx={{fontFamily: 'Georgia, serif', fontSize: '1.2em'}}>
+                    sx={{fontFamily: 'Roboto, sans-serif', fontSize: '1.2em'}}>
                 Reset
             </Button>
             <Dialog open={open} onClose={handleClose}>

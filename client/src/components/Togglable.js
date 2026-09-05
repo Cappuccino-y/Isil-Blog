@@ -1,40 +1,14 @@
-import {useState, forwardRef, useImperativeHandle, useEffect, useRef} from 'react'
-import React from 'react';
-import Button from '@mui/material/Button'
-import Comment from './Comment'
-import {v4 as uuidv4} from 'uuid';
+import {useState, forwardRef, useImperativeHandle} from 'react'
+import Dialog from '@mui/material/Dialog';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
 import BlogForm from "./BlogForm";
 
+const BRAND_FONT = "'Cinzel','Noto Serif SC','Source Han Serif SC','STZhongsong','SimSun',serif";
+
+/* New Blog 弹窗：ref.toggleVisibility() 由外部按钮触发（接口与原 Togglable 一致） */
 const Togglable = forwardRef((props, ref) => {
     const [visible, setVisible] = useState(false)
-
-    const hideWhenVisible = {display: visible ? 'none' : ''}
-    const showWhenVisible = {display: visible ? '' : 'none'}
-
-
-    const handleDelete = async (id) => {
-        try {
-            const comments = props.blog.comments.filter(comment => comment.id !== id)
-            const newBlog = {...props.blog, comments: comments}
-            await props.updateBlog(newBlog)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-    const handleAddComment = async (commentText) => {
-        try {
-            const comments = [{
-                name: props.user.name,
-                content: commentText,
-                id: uuidv4(),
-                date: new Date()
-            }, ...props.blog.comments]
-            const newBlog = {...props.blog, comments: comments}
-            await props.updateBlog(newBlog)
-        } catch (error) {
-            console.log(error)
-        }
-    }
 
     const toggleVisibility = () => {
         setVisible(!visible)
@@ -47,18 +21,40 @@ const Togglable = forwardRef((props, ref) => {
     })
 
     return (
-        <div>
-            <div style={hideWhenVisible}>
-                <Button variant="contained" onClick={toggleVisibility} style={{marginTop: '8px'}}
-                >{props.buttonLabel}</Button>
-                <Comment comments={props.blog ? props.blog.comments : []} handleDelete={handleDelete}
-                         handleAddComment={handleAddComment}/>
-            </div>
-            <div style={showWhenVisible}>
+        <Dialog
+            open={visible}
+            onClose={toggleVisibility}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+                sx: {
+                    borderRadius: '14px',
+                    border: '1px solid #D7DDE7',
+                    boxShadow: '0 18px 50px rgba(28,35,51,.18)',
+                },
+            }}
+        >
+            <Box sx={{
+                px: {md: 4, xs: 2.5},
+                py: 3.5,
+                background: 'linear-gradient(180deg, rgba(244,246,250,.9), rgba(255,255,255,.96))',
+            }}>
+                <Box sx={{display: 'flex', alignItems: 'center', gap: 1.25, mb: 2.5}}>
+                    <Box component="img" src="/moonphases/2-moon-waxing-crescent-6.svg" alt=""
+                         sx={{height: 24, width: 'auto', display: 'block'}}/>
+                    <Typography sx={{
+                        fontFamily: BRAND_FONT,
+                        fontWeight: 600,
+                        fontSize: '1.3rem',
+                        color: '#1C2333',
+                        letterSpacing: '.04em',
+                    }}>
+                        Compose a New Tale
+                    </Typography>
+                </Box>
                 <BlogForm toggleVisibility={toggleVisibility}/>
-            </div>
-
-        </div>
+            </Box>
+        </Dialog>
     )
 })
 

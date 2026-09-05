@@ -21,9 +21,6 @@ if (-not (Test-Path "$root\server\.env")) {
     Write-Host "[!] 已生成 server\.env —— 请填入 MONGODB_URI / SECRET 后重新运行" -ForegroundColor Yellow
     exit 1
 }
-if (-not (Test-Path "$root\client\public\token.txt")) {
-    Write-Host "[!] 缺少 client\public\token.txt（AI 客服需要 API Key），其余功能不受影响" -ForegroundColor Yellow
-}
 
 # 3) 一键启动前后端（前端端口见 client\.env.development 的 PORT=3100）
 npm run dev

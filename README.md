@@ -28,15 +28,15 @@
 
 | | 功能 | 说明 |
 |:---:|---|---|
-| 🌸 | 沉浸式首页 | 昆雅语（Quenya）欢迎语 + 动态图片墙， Tolkien 风格视觉设计 |
+| 🌸 | 沉浸式首页 | 昆雅语（Quenya）欢迎语 + 中土地标图片带，月光石视觉体系 |
 | 📝 | Markdown 创作与渲染 | 基于 `@uiw/react-md-editor` + `react-markdown`，支持标题 / 引用 / 列表 / 代码块 / 表格 / KaTeX 数学公式 |
 | 🖼️ | 图片上传与管理 | 编辑器内置自定义图片命令，URL 按请求动态生成，本地与线上零配置通用 |
 | 🔐 | JWT 认证 | 注册 / 登录 / 60 分钟令牌，路由级保护，`bcryptjs` 密码哈希 |
 | 👁️ | 博客可见性白名单 | 每篇博客可指定「仅某些用户可见」，未授权用户在列表中不可见 |
 | 💬 | 评论系统 | 登录用户对博客实时评论 |
-| 🤖 | AI 客服 | 集成 OpenAI 接口的全站智能问答 |
+| 🤖 | Tilion AI 助手 | 服务端 MiniMax-M3 代理，密钥不出后端；AI 仅能检索**当前用户可见**的博客 |
 | 🚀 | 工程化脚本 | `scripts/dev.ps1` 本地一键启动 · `deploy/deploy.sh` 服务器一键部署（pm2 + nginx + HTTPS） |
-| 📱 | 响应式 UI | Material Design 3 风格，MUI 5 组件体系 |
+| 📱 | 响应式 UI | 月光石 Moonstone 设计语言（玻璃拟态 + Cinzel/EB Garamond 衬线字），MUI 5 组件体系 |
 
 ## 🏗️ 系统架构
 
@@ -50,15 +50,17 @@ flowchart TB
     end
     subgraph server["⚙️ Server · Express 分层"]
         MW["JWT 中间件 · 错误处理 · 日志"]
-        API["blogs · users · login · images · gpt"]
+        API["blogs · users · login · images · ai"]
     end
     DB[("MongoDB Atlas")]
+    MM[("MiniMax M3 API")]
     FS[("images/ 文件存储")]
 
     UI -- "axios / REST" --> NG
     NG -- "/api/*" --> MW
     MW --> API
     API --> DB
+    API -- "只读代理 · 白名单工具" --> MM
     API -- "图片 URL 按请求动态生成" --> FS
 ```
 
@@ -79,7 +81,7 @@ flowchart TB
 | axios | 统一封装的接口层（`src/api/`） |
 | @uiw/react-md-editor | Markdown 编辑器（含自定义图片命令） |
 | react-markdown + KaTeX | 正文渲染与数学公式 |
-| openai | AI 客服 |
+| react-icons | 引言羽毛等图标 |
 
 **后端 Backend**
 
@@ -91,6 +93,7 @@ flowchart TB
 | bcryptjs | 密码哈希 |
 | multer | 图片上传落盘 |
 | express-async-errors + 自定义错误中间件 | 统一错误出口 |
+| MiniMax M3（服务端代理） | Tilion AI 助手：密钥仅存后端环境变量，AI 通过白名单只读工具检索博客 |
 
 **运维 DevOps**
 
@@ -105,7 +108,7 @@ flowchart TB
 ```
 Isil-Blog/
 ├── client/                     # 前端 (React 18 + CRA + MUI + Redux)
-│   ├── public/                 # 静态资源（背景图、favicon、token.txt）
+│   ├── public/                 # 静态资源（中土场景图、月相 SVG、自托管字体、favicon）
 │   ├── src/
 │   │   ├── api/                # 接口层（axios 封装：blogs / users / login / images / gpt）
 │   │   ├── components/         # 通用组件（Blog、Comment、LoginForm、Dialog…）
@@ -119,7 +122,7 @@ Isil-Blog/
 │   │   ├── config/             # 环境变量集中读取
 │   │   ├── db/                 # MongoDB 连接
 │   │   ├── models/             # Mongoose 模型（blog、user）
-│   │   ├── controllers/        # 控制器（blogs / users / login / images）
+│   │   ├── controllers/        # 控制器（blogs / users / login / images / ai）
 │   │   ├── middleware/         # JWT、日志、错误处理中间件
 │   │   ├── app.js              # Express 应用与路由挂载
 │   │   └── index.js            # HTTP 入口
@@ -145,6 +148,9 @@ cd Isil-Blog
 | `MONGODB_URI` | MongoDB 连接串（Atlas 或本地） |
 | `SECRET` | JWT 签名密钥 |
 | `UPLOAD_DIR` | 图片目录（可选，不填走默认） |
+| `MINIMAX_API_KEY` | Tilion AI 代理密钥（可选，不填则 AI 助手提示未配置） |
+| `MINIMAX_MODEL` | 模型名（默认 `MiniMax-M3`） |
+| `MINIMAX_API_BASE` | API 基址（默认 `https://api.minimaxi.com/v1`） |
 
 **2️⃣ 一键启动**（自动装依赖、检查 `.env`、同时拉起前后端）：
 
@@ -165,8 +171,7 @@ npm run dev              # 后端 :3001 + 前端 :3100
 
 | 环境文件 | 用途 | 是否入库 |
 |---|---|:---:|
-| `server/.env` | 连接串、JWT SECRET、图片目录 | ❌ 本地自行创建 |
-| `client/public/token.txt` | AI 客服 API Key（运行时读取） | ❌ |
+| `server/.env` | 连接串、JWT SECRET、图片目录、MINIMAX_* | ❌ 本地自行创建 |
 | `client/.env.development` | 开发 API 地址 + 端口 | ✅ |
 | `client/.env.production` | 生产 API 地址（构建兜底） | ✅ |
 
@@ -203,6 +208,8 @@ sudo bash deploy.sh
 | JWT 60 分钟有效期 | 在安全与「免频繁重登」体验间取平衡 |
 | nginx 静态直读 `/images/` | 图片流量不经过 Node，降低后端压力 |
 | 部署脚本幂等 + nginx 失败回滚 | 重复执行安全，改配置不至于把站点改挂 |
+| Tilion 服务端代理 + 只读白名单工具 | 上游密钥永不进前端/构建产物；AI 只能读到当前用户可见的博客 |
+| 月光石设计语言（雾白底 + 白玻璃卡 + Cinzel/EB Garamond） | 统一优雅的中土叙事视觉，衬线字体呼应托尔金手稿气质 |
 
 ## 🗺️ Roadmap
 

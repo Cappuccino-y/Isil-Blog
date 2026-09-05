@@ -44,12 +44,12 @@ function DialogSignUp() {
         <div>
             <Button variant="contained" color="inherit" onClick={handleClickOpen}
                     sx={{
-                        fontFamily: 'Georgia, serif',
+                        fontFamily: 'Roboto, sans-serif',
                         fontSize: '1.2em',
                         marginLeft: '1vh',
-                        backgroundColor: '#191970',
+                        backgroundColor: '#4C5871',
                         '&:hover': {
-                            backgroundColor: '#000080',
+                            backgroundColor: '#1C2333',
                             color: 'white'
                         },
                         color: 'white'
