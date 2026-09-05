@@ -31,52 +31,62 @@ blog/
 └── package.json                # 根：一键安装/一键启动
 ```
 
-## 本地启动
-
-### 1. 安装依赖（首次）
-
-```bash
-cd D:\blog
-npm install
-npm run install:all
-```
-
-### 2. 配置数据库
+## 本地启动（一键）
 
 ```powershell
-cp server/.env.example server/.env   # 填入你的 MongoDB 连接串和 JWT SECRET
-```
-
-- `MONGODB_URI`：MongoDB 连接串（Atlas 的 SRV 或标准串均可）
-- `SECRET`：JWT 签名密钥
-- 另需在 `client/public/token.txt` 放入 AI 客服用的 API Key（`api/gpt.js` 运行时读取，不入库）
-
-### 3. 一键启动（推荐）
-
-```bash
 cd D:\blog
-npm run dev
+.\scripts\dev.ps1        # 自动装依赖、检查 .env，然后同时拉起前后端
 ```
 
-同时启动后端（http://localhost:3001）与前端（http://localhost:3100），浏览器访问 http://localhost:3100。
+或手动：
 
-> 注：本机 3000 端口被 draw.io MCP 服务占用，故前端使用 3100（在 `client/.env.development` 的 `PORT=3100` 配置）。
+```powershell
+npm install
+npm run install:all
+npm run dev              # 后端 :3001 + 前端 :3100
+```
 
-### 4. 分开启动（可选）
+浏览器访问 http://localhost:3100（本机 3000 被占用，前端端口在 `client/.env.development` 配置）。
+
+### 环境文件说明
+
+| 文件 | 用途 | 是否入库 |
+|---|---|---|
+| `server/.env` | 数据库连接串、JWT SECRET、图片目录 | ❌ 本地自行创建（参考 `.env.example`） |
+| `client/public/token.txt` | AI 客服 API Key（`api/gpt.js` 运行时读取） | ❌ |
+| `client/.env.development` | 开发 API 地址 + 端口 | ✅ |
+| `client/.env.production` | 生产 API 地址（构建兜底，deploy 脚本会按域名覆盖） | ✅ |
+
+## 部署到服务器（nginx + HTTPS）
+
+服务器上执行（以 Ubuntu + nginx 为例），全程非交互、可重复执行：
 
 ```bash
-# 终端 1：后端
-npm run dev:server
-
-# 终端 2：前端
-npm run dev:client
+git clone git@github.com:Cappuccino-y/Isil-Blog.git && cd Isil-Blog/deploy
+cp deploy.conf.example deploy.conf    # 按需修改域名/路径/端口
+sudo bash deploy.sh
 ```
 
-## 生产构建
+脚本自动完成：
 
-```bash
-npm run build      # 产物在 client/build
-```
+1. 安装依赖（root / client / server）
+2. 构建前端（按 `deploy.conf` 的域名注入 API 地址）
+3. 同步静态资源到 `WEB_ROOT`、准备图片目录
+4. 生成/校对 `server/.env`（含 `UPLOAD_DIR` 对齐图片目录）
+5. 启动后端（pm2 守护，自动安装；或 nohup 模式）
+6. 由 `nginx.conf.template` 生成配置并 `nginx -t` 校验（失败自动保留原配置）
+7. 重载 nginx
+
+**nginx 配置要点**（对比旧版的改进）：
+
+- 80 端口 301 强制跳转 HTTPS（旧版无跳转）
+- SPA `try_files` 兜底在两个端口都生效（旧版 80 缺失，刷新非首页会 404）
+- 仅 TLSv1.2/1.3 + 现代 cipher 套件（旧版含已弃用的 TLSv1/1.1）
+- `/images/` alias 与后端 `UPLOAD_DIR` 对齐，旧图片链接 `/images/<用户名>/...` 不受影响
+- `/api/` 反代补了 `X-Forwarded-Proto`（后端可正确生成 https 图片 URL）
+- gzip 压缩文本资源
+
+证书文件（`$DOMAIN.pem/.key`）需提前放到 `deploy.conf` 指定的路径（默认 `/etc/nginx/ssl/`）；每次改动配置只需重跑 `deploy.sh`，nginx 修改前会自动备份为 `nginx.conf.bak.*`。
 
 ## 与原项目的差异
 

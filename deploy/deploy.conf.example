@@ -1,0 +1,27 @@
+# ============================================
+# Isil-Blog 服务器部署配置
+# 用法: cp deploy.conf.example deploy.conf 后按需修改
+# ============================================
+
+# 域名（必填，HTTPS 证书绑定域名；80/443 的 server_name）
+DOMAIN=www.mistysakura.top
+
+# 服务器 IP（可选，追加到 80 端口 server_name，允许 http://IP 访问后跳转 https://域名）
+SERVER_IP=
+
+# 后端端口（nginx /api/ 反代目标）
+APP_PORT=3001
+
+# 前端静态目录（nginx root，React 构建产物）
+WEB_ROOT=/root/build
+
+# 图片根目录（后端上传目录，实际文件位于 $IMAGES_BASE/images/<用户名>/）
+# 保持 /root 可直接兼容旧数据（历史文章里的 /images/ 链接不受影响）
+IMAGES_BASE=/root
+
+# SSL 证书路径（留空则默认 /etc/nginx/ssl/$DOMAIN.pem 和 .key）
+SSL_CERT=
+SSL_KEY=
+
+# 后端守护方式: pm2（自动安装）或 nohup
+DAEMON=pm2
