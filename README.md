@@ -40,29 +40,12 @@
 
 ## 🏗️ 系统架构
 
-```mermaid
-flowchart TB
-    subgraph client["🖥️ Client · React 18 SPA"]
-        UI["MUI 5 界面层<br/>Redux 全局状态<br/>React Router 6"]
-    end
-    subgraph edge["🌐 Nginx · 443 TLS 1.2/1.3"]
-        NG["静态资源 / SPA try_files 兜底<br/>/images/ 图片直读<br/>/api/ 反向代理"]
-    end
-    subgraph server["⚙️ Server · Express 分层"]
-        MW["JWT 中间件 · 错误处理 · 日志"]
-        API["blogs · users · login · images · ai"]
-    end
-    DB[("MongoDB Atlas")]
-    MM[("MiniMax M3 API")]
-    FS[("images/ 文件存储")]
-
-    UI -- "axios / REST" --> NG
-    NG -- "/api/*" --> MW
-    MW --> API
-    API --> DB
-    API -- "只读代理 · 白名单工具" --> MM
-    API -- "图片 URL 按请求动态生成" --> FS
-```
+<div align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/architecture-dark.svg">
+    <img src="docs/diagrams/architecture-light.svg" alt="Isil-Blog 系统架构：React SPA → Nginx → Express 分层 → MongoDB Atlas / MiniMax M3 / 图片存储">
+  </picture>
+</div>
 
 - **前端**只与 `/api/*` 通信，图片走 nginx `/images/` 静态直读，不占用后端资源
 - **后端**按 `config / db / models / controllers / middleware / utils` 分层，`express-async-errors` 统一异步错误处理
