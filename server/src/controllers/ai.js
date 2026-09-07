@@ -1,5 +1,9 @@
 const aiRouter = require('express').Router()
 const jwt = require('jsonwebtoken')
+const http = require('http')
+const https = require('https')
+const net = require('net')
+const tls = require('tls')
 const config = require('../config')
 const Blog = require('../models/blog')
 const User = require('../models/user')
@@ -103,27 +107,97 @@ const blogForTool = async (id, user) => {
     }
 }
 
-const callMiniMax = async messages => {
-    const res = await fetch(`${config.MINIMAX_API_BASE}/chat/completions`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${config.MINIMAX_API_KEY}`
-        },
-        body: JSON.stringify({
-            model: config.MINIMAX_MODEL,
-            messages,
-            tools: TOOLS,
-            tool_choice: 'auto',
-            thinking: {type: 'disabled'},
-            max_completion_tokens: 4096
-        })
-    })
-    if (!res.ok) {
-        const detail = (await res.text()).slice(0, 300)
-        throw new Error(`MiniMax API ${res.status}: ${detail}`)
+const parseProxy = raw => {
+    if (!raw) return null
+    try {
+        const u = new URL(raw)
+        return { host: u.hostname, port: Number(u.port) || 80 }
+    } catch (error) {
+        return null
     }
-    const data = await res.json()
+}
+
+const PROXY = parseProxy(config.MINIMAX_PROXY)
+
+const createTunnelAgent = proxy => {
+    const agent = new https.Agent({ keepAlive: true })
+    agent.createConnection = (options, callback) => {
+        const socket = net.connect(proxy.port, proxy.host, () => {
+            socket.write(`CONNECT ${options.host}:${options.port} HTTP/1.1\r\nHost: ${options.host}:${options.port}\r\n\r\n`)
+        })
+        let buf = Buffer.alloc(0)
+        const onData = chunk => {
+            buf = Buffer.concat([buf, chunk])
+            const idx = buf.indexOf('\r\n\r\n')
+            if (idx === -1) return
+            socket.removeListener('data', onData)
+            const statusLine = buf.slice(0, idx).toString().split('\r\n')[0]
+            if (!/^HTTP\/1\.[01] 200/.test(statusLine)) {
+                callback(new Error(`proxy CONNECT failed: ${statusLine}`))
+                return
+            }
+            const tlsSocket = tls.connect({ socket, servername: options.host }, () => {
+                callback(null, tlsSocket)
+            })
+            tlsSocket.on('error', callback)
+        }
+        socket.on('data', onData)
+        socket.on('error', callback)
+    }
+    return agent
+}
+
+const proxyAgent = PROXY ? createTunnelAgent(PROXY) : null
+
+const requestViaProxy = (url, headers, body) => new Promise((resolve, reject) => {
+    const u = new URL(url)
+    const req = https.request({
+        host: u.hostname,
+        port: Number(u.port) || 443,
+        path: u.pathname + u.search,
+        method: 'POST',
+        headers: { ...headers, 'Content-Length': Buffer.byteLength(body) },
+        agent: proxyAgent
+    }, res => {
+        let data = ''
+        res.setEncoding('utf8')
+        res.on('data', chunk => { data += chunk })
+        res.on('end', () => resolve({ status: res.statusCode, text: data }))
+    })
+    req.on('error', reject)
+    req.write(body)
+    req.end()
+})
+
+const callMiniMax = async messages => {
+    const url = `${config.MINIMAX_API_BASE}/chat/completions`
+    const headers = {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${config.MINIMAX_API_KEY}`
+    }
+    const body = JSON.stringify({
+        model: config.MINIMAX_MODEL,
+        messages,
+        tools: TOOLS,
+        tool_choice: 'auto',
+        thinking: {type: 'disabled'},
+        max_completion_tokens: 4096
+    })
+
+    let status, text
+    if (PROXY) {
+        ({ status, text } = await requestViaProxy(url, headers, body))
+    } else {
+        const res = await fetch(url, { method: 'POST', headers, body })
+        status = res.status
+        text = await res.text()
+    }
+
+    if (status < 200 || status >= 300) {
+        throw new Error(`MiniMax API ${status}: ${text.slice(0, 300)}`)
+    }
+
+    const data = JSON.parse(text)
     if (data.base_resp && data.base_resp.status_code !== 0) {
         throw new Error(`MiniMax error ${data.base_resp.status_code}: ${data.base_resp.status_msg}`)
     }
