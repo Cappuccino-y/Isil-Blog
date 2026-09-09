@@ -3,7 +3,12 @@
 import { useEffect, useRef, useState } from 'react'
 import { SendHorizontal, X } from 'lucide-react'
 import { Crescent } from '@/components/moon-phases'
-import { Markdown } from '@/components/markdown'
+import dynamic from 'next/dynamic'
+
+const Markdown = dynamic(
+  () => import('@/components/markdown').then((m) => ({ default: m.Markdown })),
+  { ssr: false },
+)
 
 interface ChatMsg {
   role: 'user' | 'assistant' | 'tool'

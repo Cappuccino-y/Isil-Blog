@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { ImagePlus, Loader2, Save, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Crescent } from '@/components/moon-phases'
 import { toast } from 'sonner'
 
 const MDEditor = dynamic(() => import('@uiw/react-md-editor'), { ssr: false })
@@ -166,12 +167,22 @@ export default function ComposePage() {
           {editId ? '重铸篇章' : '落笔新篇'}
           <span className="moon-eyebrow-line-right" />
         </div>
-        <h1 className="mt-4 font-heading text-2xl tracking-[0.3em]">
+        <h1 className="mt-4 flex items-center justify-center gap-3 font-heading text-2xl tracking-[0.3em]">
+          <Crescent size={20} className="moon-breathe text-gold" />
           {editId ? '重 铸' : '执 笔'}
+          <Crescent size={20} className="moon-breathe -scale-x-100 text-gold" />
         </h1>
       </div>
 
-      <div className="moon-glass moon-hairline rounded-2xl p-6 sm:p-8">
+      <div className="moon-glass moon-hairline relative rounded-2xl p-6 sm:p-8">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute -inset-x-8 -top-10 h-40 opacity-60"
+          style={{
+            background:
+              'radial-gradient(60% 100% at 50% 0%, color-mix(in srgb, var(--gold) 10%, transparent), transparent 70%)',
+          }}
+        />
         <Input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -217,7 +228,7 @@ export default function ComposePage() {
           )}
         </div>
 
-        <div className="mt-5 overflow-hidden rounded-xl border border-glass-border" data-color-mode={resolvedTheme ?? 'dark'}>
+        <div className="relative mt-5 min-w-0 overflow-hidden rounded-xl border border-glass-border" data-color-mode={resolvedTheme ?? 'dark'}>
           <MDEditor
             value={content}
             onChange={(v) => setContent(v || '')}

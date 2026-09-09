@@ -34,14 +34,23 @@ export default async function BlogDetailPage({ params }: Props) {
       <ViewPing blogId={blog.id} />
       <ReadingProgress />
       <div className="grid gap-10 lg:grid-cols-[1fr_250px]">
-        <article className="mx-auto w-full max-w-3xl">
+        <article className="mx-auto w-full min-w-0 max-w-3xl">
+          <div className="pt-2 text-left">
+            <Link
+              href="/blog"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-gold"
+            >
+              <ArrowLeft size={14} />
+              回到卷帙
+            </Link>
+          </div>
           <header className="pb-8 pt-4 text-center">
             <div className="flex items-center justify-center gap-3 text-xs tracking-[0.4em] text-gold">
               <span className="moon-eyebrow-line" />
               {blog.tag || '无羁'}
               <span className="moon-eyebrow-line-right" />
             </div>
-            <h1 className="mt-5 font-heading text-3xl leading-snug tracking-wide sm:text-4xl">
+            <h1 className="mt-5 break-words font-body text-3xl font-semibold leading-snug tracking-wide sm:text-4xl">
               {blog.title || '无题之篇'}
             </h1>
             <div className="mt-5 flex flex-wrap items-center justify-center gap-4 text-xs text-muted-foreground">

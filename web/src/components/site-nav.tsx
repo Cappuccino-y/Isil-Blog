@@ -89,7 +89,7 @@ export function SiteNav() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="moon-glass border-glass-border">
                   <div className="px-2 py-1.5 text-xs text-muted-foreground">
-                    {me.name} · {me.username}
+                    {me.name === me.username ? me.name : `${me.name} · ${me.username}`}
                   </div>
                   <DropdownMenuItem onClick={() => router.push('/compose')}>
                     <PenLine size={14} className="mr-2" /> 撰写新篇

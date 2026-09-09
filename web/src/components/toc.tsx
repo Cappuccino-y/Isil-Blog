@@ -16,7 +16,7 @@ export function ReadingProgress() {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
   return (
-    <div className="fixed inset-x-0 top-0 z-[55] h-[2px] bg-transparent">
+    <div className="fixed inset-x-0 top-0 z-[55] h-[2px] bg-transparent pointer-events-none">
       <div
         className="h-full bg-gradient-to-r from-star via-gold to-gold-bright transition-[width] duration-150"
         style={{ width: `${progress * 100}%`, boxShadow: '0 0 10px var(--glow)' }}
@@ -60,7 +60,10 @@ export function Toc() {
   if (items.length === 0) return null
 
   return (
-    <nav aria-label="目录" className="moon-glass moon-hairline rounded-2xl p-5">
+    <nav
+      aria-label="目录"
+      className="moon-glass moon-hairline max-h-[calc(100dvh-8rem)] overflow-y-auto rounded-2xl p-5 [scrollbar-width:thin]"
+    >
       <div className="mb-3 flex items-center gap-2 text-xs tracking-widest text-gold">
         <ListTree size={13} />
         卷目

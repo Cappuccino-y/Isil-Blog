@@ -42,6 +42,12 @@ export function Markdown({ children }: { children: string }) {
         rehypePlugins={[rehypeRaw, rehypeSlug, rehypeKatex, rehypeHighlight]}
         components={{
           pre: PreWithCopy,
+          // 表格在窄屏可能宽于版心：包一层横向滚动容器，避免撑破页面
+          table: (props) => (
+            <div className="overflow-x-auto" style={{ scrollbarWidth: 'thin' }}>
+              <table {...props} />
+            </div>
+          ),
           img: (props) => <img {...props} loading="lazy" alt={props.alt || ''} />,
           a: (props) => <a {...props} target="_blank" rel="noreferrer" />,
         }}

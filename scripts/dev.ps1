@@ -1,4 +1,4 @@
-# Isil-Blog 本地一键启动（Windows / PowerShell）
+﻿# Isil-Blog 本地一键启动（Windows / PowerShell）
 # 用法: 在仓库根目录执行  .\scripts\dev.ps1
 $ErrorActionPreference = 'Continue'
 $root = Split-Path -Parent $PSScriptRoot

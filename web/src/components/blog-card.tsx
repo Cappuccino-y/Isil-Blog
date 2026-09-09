@@ -24,7 +24,7 @@ export function BlogCard({
   return (
     <Link
       href={`/blog/${blog.id}`}
-      className={`moon-glass moon-hairline moon-card-hover moon-stagger group flex h-full flex-col rounded-2xl ${
+      className={`moon-glass moon-hairline moon-card-hover moon-stagger group flex h-full min-w-0 flex-col rounded-2xl ${
         featured ? 'p-7' : 'p-6'
       }`}
       style={{ animationDelay: `${delay}ms` }}
@@ -36,13 +36,13 @@ export function BlogCard({
         <time className="text-xs text-muted-foreground">{blog.date?.slice(0, 10)}</time>
       </div>
       <h3
-        className={`mt-4 font-heading font-semibold tracking-wide text-foreground transition-colors group-hover:text-gold ${
+        className={`mt-4 break-words font-body font-semibold leading-snug tracking-wide text-foreground transition-colors group-hover:text-gold ${
           featured ? 'text-xl' : 'text-lg'
         }`}
       >
         {blog.title || '无题之篇'}
       </h3>
-      <p className="mt-2.5 line-clamp-3 text-sm leading-relaxed text-muted-foreground">
+      <p className="mt-2.5 line-clamp-3 break-words text-sm leading-relaxed text-muted-foreground">
         {blog.excerpt || '静待月光的篇章……'}
       </p>
       <div className="mt-auto flex items-center gap-4 pt-4 text-xs text-muted-foreground">

@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { ArrowRight, Feather, Sparkles, Eye } from 'lucide-react'
+import Image from 'next/image'
+import { ArrowRight, Feather, Sparkles, Eye, Compass } from 'lucide-react'
 import { listVisibleBlogs, excerpt, type BlogJSON } from '@/lib/blogs'
 import { getSessionUser } from '@/lib/auth'
 import { MoonPhases, Crescent } from '@/components/moon-phases'
@@ -25,9 +26,14 @@ export default async function HomePage() {
   return (
     <main>
       <section className="relative -mt-20 flex min-h-[92vh] items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('/art/rivendell.jpg')" }}
+        <Image
+          src="/art/rivendell.jpg"
+          alt="Rivendell · 幽谷中的精灵居所"
+          fill
+          priority
+          quality={82}
+          sizes="100vw"
+          className="object-cover object-center"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-[rgba(4,8,18,0.72)] via-[rgba(4,8,18,0.45)] to-background" />
         <div className="relative z-10 flex flex-col items-center px-6 pt-10 text-center">
@@ -79,7 +85,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
         {featured.length > 0 && (
           <section className="mt-4">
             <Reveal>
@@ -126,11 +132,15 @@ export default async function HomePage() {
         translation="一颗星辰，照耀我们相遇的时刻"
       />
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <section className="relative mt-8 flex h-72 overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url('/art/moonhart.jpg')" }}
+          <Image
+            src="/art/moonhart.jpg"
+            alt="Moonlit forest and stag"
+            fill
+            quality={70}
+            sizes="(min-width: 1280px) 80rem, 100vw"
+            className="object-cover object-center"
           />
           <div className="absolute inset-0 bg-[rgba(4,8,18,0.42)]" />
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_62%_135%_at_50%_50%,rgba(4,8,18,0.9)_32%,rgba(4,8,18,0.4)_66%,transparent_100%)]" />
@@ -160,7 +170,7 @@ export default async function HomePage() {
         </section>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <section id="keeper" className="mt-24 scroll-mt-24">
           <Reveal>
             <div className="mb-8 flex items-center gap-3 text-xs tracking-[0.4em] text-gold">
@@ -170,26 +180,53 @@ export default async function HomePage() {
           </Reveal>
           <Reveal delay={100}>
             <div className="grid items-stretch gap-8 md:grid-cols-[1fr_340px]">
-              <div className="moon-glass moon-hairline flex flex-col justify-center rounded-2xl p-8 sm:p-10">
-                <h3 className="font-heading text-xl tracking-wider">LYY · 白塔下的执笔者</h3>
-                <p className="mt-4 text-sm leading-loose text-muted-foreground">
-                  把读过的书、写过的代码、想通的道理，一一誊进这卷编年史。
-                  深信所有被认真记录的知识，都会像星光一样，在多年后的某个夜里重新亮起。
-                </p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {CHIPS.map((c) => (
-                    <span
-                      key={c}
-                      className="rounded-full border border-glass-border px-3 py-1 text-xs text-muted-foreground"
-                    >
-                      {c}
+              <div className="moon-glass moon-hairline flex flex-col justify-between rounded-2xl p-8 sm:p-10">
+                <div>
+                  <h3 className="font-heading text-xl tracking-wider">LYY · 白塔下的执笔者</h3>
+                  <p className="mt-4 text-sm leading-loose text-muted-foreground">
+                    把读过的书、写过的代码、想通的道理，一一誊进这卷编年史。
+                    深信所有被认真记录的知识，都会像星光一样，在多年后的某个夜里重新亮起。
+                  </p>
+                </div>
+                <div className="mt-6 space-y-5">
+                  <p className="border-l-2 border-gold/40 pl-4 font-body text-sm italic leading-relaxed text-foreground/80 dark:text-[#cfd9ee]">
+                    “All that is gold does not glitter；
+                    金子未必闪光，静静写下的字句亦是。”
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {CHIPS.map((c) => (
+                      <span
+                        key={c}
+                        className="rounded-full border border-glass-border px-3 py-1 text-xs text-muted-foreground"
+                      >
+                        {c}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap items-center justify-between gap-3 border-t border-glass-border pt-4 text-xs text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Compass size={13} className="text-gold/70" />
+                      坐标 · 中土西境 / mistysakura.top
                     </span>
-                  ))}
+                    <a
+                      href="https://www.mistysakura.top"
+                      className="inline-flex items-center gap-1 text-gold-bright transition-colors hover:text-gold"
+                    >
+                      拜访居所 →
+                    </a>
+                  </div>
                 </div>
               </div>
-              <figure className="moon-card-hover relative overflow-hidden rounded-2xl border border-gold/25 shadow-[0_16px_50px_rgba(4,8,18,0.45)]">
-                <img src="/art/gandalf.jpg" alt="You shall not pass" className="h-64 w-full object-cover md:h-80" />
-                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/85 to-transparent p-4 text-xs italic leading-relaxed text-[#e8edf7]">
+              <figure className="moon-card-hover group relative overflow-hidden rounded-2xl border border-gold/25 shadow-[0_16px_50px_rgba(4,8,18,0.45)]">
+                <Image
+                  src="/art/gandalf.jpg"
+                  alt="You shall not pass"
+                  fill
+                  quality={80}
+                  sizes="(min-width: 768px) 340px, 100vw"
+                  className="object-cover object-center transition-transform duration-700 group-hover:scale-105"
+                />
+                <figcaption className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/55 to-transparent p-4 pt-14 text-xs italic leading-relaxed text-[#e8edf7] [text-shadow:0_1px_6px_rgba(0,0,0,0.95)]">
                   “我巴不得这事从未发生……”
                   <br />
                   “凡人皆是如此。但决定如何度过余下的时光，是我们自己的事。”
@@ -205,33 +242,45 @@ export default async function HomePage() {
         translation="啊，点燃星辰的埃尔贝瑞丝"
       />
 
-      <div className="mx-auto max-w-6xl px-6">
-        <section className="relative mt-8 flex h-72 items-end overflow-hidden">
-          <img
-            src="/art/map.jpg"
-            alt="Middle Earth map"
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{
-              maskImage:
-                'radial-gradient(ellipse 72% 85% at 50% 50%, black 52%, transparent 99%)',
-              WebkitMaskImage:
-                'radial-gradient(ellipse 72% 85% at 50% 50%, black 52%, transparent 99%)',
-            }}
-          />
-          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[rgba(6,10,22,0.72)] via-[rgba(6,10,22,0.2)] to-transparent pb-7 pt-20 text-center">
-            <Reveal>
-              <p className="font-heading text-2xl tracking-[0.2em] text-[#f4f6fa] drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
-                世界在地图上延展，知识在笔下生根
-              </p>
-              <p className="mt-2 text-xs tracking-[0.4em] text-[#c9d4ea] drop-shadow">
-                MIDDLE EARTH · 第三纪元
-              </p>
-            </Reveal>
-          </div>
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
+        <section className="mt-8">
+          <Link
+            href="/blog"
+            aria-label="走进中土地图 · 浏览全部篇章"
+            className="group relative block h-72 overflow-hidden rounded-2xl border border-glass-border transition-all hover:border-gold/40 hover:shadow-[0_0_44px_var(--glow)]"
+          >
+            <Image
+              src="/art/map.jpg"
+              alt="Middle Earth map"
+              fill
+              quality={72}
+              sizes="(min-width: 1280px) 80rem, 100vw"
+              className="object-cover object-center transition-transform duration-[1200ms] group-hover:scale-[1.04]"
+              style={{
+                maskImage:
+                  'radial-gradient(ellipse 72% 85% at 50% 50%, black 52%, transparent 99%)',
+                WebkitMaskImage:
+                  'radial-gradient(ellipse 72% 85% at 50% 50%, black 52%, transparent 99%)',
+              }}
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-[rgba(6,10,22,0.72)] via-[rgba(6,10,22,0.2)] to-transparent pb-7 pt-20 text-center">
+              <Reveal>
+                <p className="font-heading text-2xl tracking-[0.2em] text-[#f4f6fa] drop-shadow-[0_2px_12px_rgba(0,0,0,0.85)]">
+                  世界在地图上延展，知识在笔下生根
+                </p>
+                <p className="mt-2 text-xs tracking-[0.4em] text-[#c9d4ea] transition-colors group-hover:text-gold">
+                  <span className="inline-flex items-center gap-2">
+                    <Compass size={13} />
+                    MIDDLE EARTH · 第三纪元 —— 走进地图
+                  </span>
+                </p>
+              </Reveal>
+            </div>
+          </Link>
         </section>
       </div>
 
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="mx-auto max-w-7xl px-6 lg:px-10">
         <section className="mt-24 text-center">
           <Reveal>
             <p className="font-body text-lg italic text-muted-foreground">

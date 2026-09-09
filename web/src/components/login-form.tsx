@@ -39,26 +39,44 @@ export function LoginForm() {
 
   return (
     <form onSubmit={submit} className="moon-glass moon-hairline mt-6 space-y-4 rounded-2xl p-7">
-      <div className="relative">
-        <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="名讳"
-          autoComplete="username"
-          className="rounded-xl border-glass-border bg-transparent pl-10"
-        />
+      <div>
+        <label
+          htmlFor="login-username"
+          className="mb-1.5 block text-xs tracking-[0.2em] text-muted-foreground"
+        >
+          名讳
+        </label>
+        <div className="relative">
+          <User size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="login-username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="名讳"
+            autoComplete="username"
+            className="rounded-xl border-glass-border bg-transparent pl-10"
+          />
+        </div>
       </div>
-      <div className="relative">
-        <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="密语"
-          autoComplete="current-password"
-          className="rounded-xl border-glass-border bg-transparent pl-10"
-        />
+      <div>
+        <label
+          htmlFor="login-password"
+          className="mb-1.5 block text-xs tracking-[0.2em] text-muted-foreground"
+        >
+          密语
+        </label>
+        <div className="relative">
+          <KeyRound size={15} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            id="login-password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            placeholder="密语"
+            autoComplete="current-password"
+            className="rounded-xl border-glass-border bg-transparent pl-10"
+          />
+        </div>
       </div>
       <Button type="submit" disabled={loading} className="w-full rounded-xl tracking-[0.3em]">
         {loading ? '星门开启中……' : '推 门 而 入'}

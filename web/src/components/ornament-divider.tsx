@@ -19,10 +19,10 @@ export function OrnamentDivider({ phrase, translation }: { phrase?: string; tran
         <span className="h-px flex-1 bg-gradient-to-l from-transparent to-gold/40" />
       </div>
       {phrase && (
-        <p className="text-center font-body text-xs italic tracking-wider text-gold/75">
+        <p className="text-center font-body text-xs italic tracking-wider text-gold-bright dark:text-gold/75">
           {phrase}
           {translation && (
-            <span className="ml-3 not-italic text-muted-foreground/80">{translation}</span>
+            <span className="ml-3 not-italic text-muted-foreground">{translation}</span>
           )}
         </p>
       )}
